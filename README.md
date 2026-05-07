@@ -1,6 +1,6 @@
 # 🔬 ForensX Lab — Digital Forensics & Evidence Preservation
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-00ff88?style=for-the-badge)](https://yourusername.github.io/forensx-lab)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-00ff88?style=for-the-badge)](https://vercel.com/aswinmathew2004s-projects/forens-x-lab)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![ACPO](https://img.shields.io/badge/ACPO-Compliant-green?style=for-the-badge)]()
 
