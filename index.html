@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  ForensX Lab — Digital Forensics & Evidence Preservation    ║
+  ║  Version: 1.0.0                                            ║
+  ║  Author:  Aswin Mathew | https://aswinmathew.xyz            ║
+  ║                                                            ║
+  ║  MIT License                                               ║
+  ║  Copyright (c) 2026 Aswin Mathew                           ║
+  ║                                                            ║
+  ║  Permission is hereby granted, free of charge, to any      ║
+  ║  person obtaining a copy of this software and associated    ║
+  ║  documentation files (the "Software"), to deal in the      ║
+  ║  Software without restriction, including without limitation ║
+  ║  the rights to use, copy, modify, merge, publish,          ║
+  ║  distribute, sublicense, and/or sell copies of the          ║
+  ║  Software, and to permit persons to whom the Software is    ║
+  ║  furnished to do so, subject to the following conditions:   ║
+  ║                                                            ║
+  ║  The above copyright notice and this permission notice      ║
+  ║  shall be included in all copies or substantial portions    ║
+  ║  of the Software.                                          ║
+  ║                                                            ║
+  ║  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY  ║
+  ║  KIND, EXPRESS OR IMPLIED. See LICENSE file for details.    ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForensX Lab — Digital Forensics & Evidence Preservation</title>
+<meta name="description" content="Advanced Digital Forensics & Evidence Preservation Lab by Aswin Mathew. Simulate forensic investigations, hash files, analyze metadata, recover data, and generate court-admissible reports following ACPO guidelines.">
+<meta name="author" content="Aswin Mathew">
+<meta name="license" content="MIT">
+<meta name="copyright" content="Copyright (c) 2026 Aswin Mathew">
+<meta name="version" content="1.0.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🔬</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0a0e14;--bg2:#111820;--bg3:#1a2233;--bg4:#222d3d;
+--fg:#c8d6e5;--fg2:#8899aa;--fg3:#556677;
+--accent:#00ff88;--accent2:#00cc6a;--accent3:#009950;
+--red:#ff4757;--orange:#ffa502;--blue:#3498db;--purple:#9b59b6;--cyan:#00d2d3;
+--yellow:#f1c40f;
+--border:#1e2d3d;--border2:#2a3a4a;
+--radius:8px;--radius2:12px;
+--font-mono:'JetBrains Mono','IBM Plex Mono',monospace;
+--font-ui:'Space Grotesk',sans-serif;
+--shadow:0 4px 24px rgba(0,0,0,.4);
+--glow:0 0 20px rgba(0,255,136,.15);
+}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--fg3)}
+
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--bg);font-family:var(--font-mono)}
+.logo-text{font-size:1.3rem;font-weight:700;letter-spacing:1px}
+.logo-text span{color:var(--accent)}
+.header-meta{display:flex;align-items:center;gap:16px;font-size:.8rem;color:var(--fg2)}
+.header-meta a{color:var(--accent);text-decoration:none}
+.status-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* LAYOUT */
+.app{display:flex;height:calc(100vh - 61px)}
+.sidebar{width:260px;min-width:260px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:8px}
+.main{flex:1;overflow-y:auto;padding:24px;max-height:calc(100vh - 61px)}
+
+/* SIDEBAR NAV */
+.nav-section{margin-bottom:8px}
+.nav-section-title{font-size:.65rem;text-transform:uppercase;letter-spacing:2px;color:var(--fg3);padding:12px 12px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;color:var(--fg2);font-size:.85rem;transition:all .15s;border:1px solid transparent;margin-bottom:2px}
+.nav-item:hover{background:var(--bg3);color:var(--fg)}
+.nav-item.active{background:rgba(0,255,136,.08);color:var(--accent);border-color:rgba(0,255,136,.2)}
+.nav-item .icon{font-size:1rem;width:22px;text-align:center}
+.nav-item .badge{margin-left:auto;background:var(--accent3);color:var(--bg);font-size:.6rem;padding:2px 6px;border-radius:10px;font-weight:600}
+
+/* PANELS */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden;margin-bottom:20px}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.panel-title .icon{color:var(--accent)}
+.panel-body{padding:20px}
+.panel-footer{padding:12px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,.2);display:flex;align-items:center;gap:12px}
+
+/* FORM ELEMENTS */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.78rem;color:var(--fg2);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+input[type="text"],input[type="number"],input[type="email"],input[type="date"],input[type="datetime-local"],
+textarea,select{
+width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+color:var(--fg);font-family:var(--font-mono);font-size:.85rem;transition:border-color .2s;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.1)}
+textarea{resize:vertical;min-height:80px}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238899aa'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:var(--radius);font-family:var(--font-ui);font-size:.85rem;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2);box-shadow:var(--glow)}
+.btn-secondary{background:var(--bg3);color:var(--fg);border-color:var(--border2)}
+.btn-secondary:hover{background:var(--bg4);border-color:var(--fg3)}
+.btn-danger{background:rgba(255,71,87,.15);color:var(--red);border-color:rgba(255,71,87,.3)}
+.btn-danger:hover{background:rgba(255,71,87,.25)}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn-block{width:100%;justify-content:center}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+
+/* DROPZONE */
+.dropzone{border:2px dashed var(--border2);border-radius:var(--radius2);padding:40px 20px;text-align:center;cursor:pointer;transition:all .3s;position:relative}
+.dropzone:hover,.dropzone.dragover{border-color:var(--accent);background:rgba(0,255,136,.03)}
+.dropzone .icon{font-size:2.5rem;margin-bottom:12px;display:block}
+.dropzone p{color:var(--fg2);font-size:.9rem}
+.dropzone .hint{font-size:.75rem;color:var(--fg3);margin-top:8px}
+.dropzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* RESULTS */
+.result-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-family:var(--font-mono);font-size:.8rem;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:400px;overflow-y:auto}
+.result-box.success{border-color:var(--accent3);background:rgba(0,255,136,.03)}
+.result-box.error{border-color:rgba(255,71,87,.3);background:rgba(255,71,87,.03)}
+
+/* HEX VIEW */
+.hex-view{font-family:var(--font-mono);font-size:.75rem;line-height:1.8;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;overflow:auto;max-height:500px}
+.hex-row{display:flex;gap:0}
+.hex-offset{color:var(--accent);min-width:72px;user-select:none}
+.hex-bytes{min-width:380px;letter-spacing:1px}
+.hex-bytes span{padding:0 1px}
+.hex-bytes span:nth-child(8n)::after{content:" ";display:inline}
+.hex-ascii{color:var(--cyan);min-width:140px;letter-spacing:.5px}
+.hex-nonprint{color:var(--fg3)}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.data-table th{text-align:left;padding:10px 14px;background:var(--bg3);color:var(--fg2);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;border-bottom:1px solid var(--border)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.data-table tr:hover td{background:rgba(0,255,136,.02)}
+.data-table .key{color:var(--accent);font-family:var(--font-mono);font-weight:500;min-width:160px}
+.data-table .val{color:var(--fg);font-family:var(--font-mono);word-break:break-all}
+
+/* TAGS */
+.tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;font-family:var(--font-mono)}
+.tag-green{background:rgba(0,255,136,.12);color:var(--accent)}
+.tag-red{background:rgba(255,71,87,.12);color:var(--red)}
+.tag-blue{background:rgba(52,152,219,.12);color:var(--blue)}
+.tag-orange{background:rgba(255,165,2,.12);color:var(--orange)}
+.tag-purple{background:rgba(155,89,182,.12);color:var(--purple)}
+.tag-yellow{background:rgba(241,196,15,.12);color:var(--yellow)}
+
+/* PROGRESS */
+.progress-bar{width:100%;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:3px;transition:width .5s ease}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);gap:0;overflow-x:auto}
+.tab{padding:10px 18px;cursor:pointer;color:var(--fg2);font-size:.82rem;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--fg);background:var(--bg3)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* STAT CARDS */
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-card .value{font-size:1.6rem;font-weight:700;color:var(--accent);font-family:var(--font-mono)}
+.stat-card .label{font-size:.72rem;color:var(--fg2);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* TIMELINE */
+.timeline-item{display:flex;gap:16px;padding:12px 0;border-left:2px solid var(--border);margin-left:8px;padding-left:20px;position:relative}
+.timeline-item::before{content:'';width:10px;height:10px;background:var(--accent);border-radius:50%;position:absolute;left:-6px;top:16px}
+.timeline-item .time{min-width:140px;font-family:var(--font-mono);font-size:.78rem;color:var(--fg3)}
+.timeline-item .event{font-size:.85rem}
+
+/* EVIDENCE LOG */
+.evidence-entry{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px}
+.evidence-entry .num{background:var(--accent3);color:var(--bg);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--accent3);border-radius:var(--radius);padding:14px 20px;color:var(--fg);font-size:.85rem;z-index:999;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);animation:slideIn .3s ease}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast.hide{animation:slideOut .3s ease forwards}
+@keyframes slideOut{to{transform:translateY(20px);opacity:0}}
+
+/* SCANNER ANIMATION */
+.scanner{position:relative;overflow:hidden}
+.scanner::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 15px var(--accent);animation:scan 2s linear infinite}
+@keyframes scan{0%{top:0}100%{top:100%}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+.sidebar{display:none}
+.grid-2,.grid-3{grid-template-columns:1fr}
+.header{padding:10px 16px}
+}
+
+/* PRINT */
+@media print{
+.sidebar,.header{display:none}
+.main{padding:0;max-height:none}
+.panel{break-inside:avoid;border:1px solid #ccc}
+body{background:#fff;color:#000}
+.result-box{background:#f5f5f5;border-color:#ccc}
+}
+
+.fade-in{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Chain of custody specific */
+.coc-header{background:linear-gradient(135deg,var(--bg3),var(--bg4));padding:20px;border-radius:var(--radius);margin-bottom:16px;border-left:4px solid var(--accent)}
+.coc-header h3{font-size:1rem;margin-bottom:4px}
+.coc-header p{color:var(--fg2);font-size:.8rem}
+.watermark{position:fixed;bottom:40px;right:40px;font-size:6rem;color:rgba(0,255,136,.03);font-weight:900;pointer-events:none;font-family:var(--font-mono);z-index:0;transform:rotate(-15deg)}
+
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px;z-index:100;overflow-x:auto}
+.mobile-nav-inner{display:flex;gap:4px;justify-content:space-around}
+.mobile-nav-btn{display:flex;flex-direction:column;align-items:center;padding:6px 10px;font-size:.6rem;color:var(--fg3);cursor:pointer;border-radius:6px;border:none;background:none;font-family:var(--font-ui)}
+.mobile-nav-btn.active{color:var(--accent)}
+.mobile-nav-btn .icon{font-size:1.1rem;margin-bottom:2px}
+@media(max-width:900px){
+.mobile-nav{display:block}
+.main{padding-bottom:80px}
+}
+</style>
+</head>
+<body>
+
+<div class="watermark">FX</div>
+
+<header class="header">
+<div class="logo">
+<div class="logo-icon">FX</div>
+<div class="logo-text">Forens<span>X</span> Lab</div>
+</div>
+<div class="header-meta">
+<span><span class="status-dot" style="display:inline-block;vertical-align:middle;margin-right:6px"></span>Ready</span>
+<span style="opacity:.5">MIT License</span>
+<a href="https://aswinmathew.xyz" target="_blank">aswinmathew.xyz</a>
+</div>
+</header>
+
+<div class="app">
+<nav class="sidebar" id="sidebar"></nav>
+<main class="main" id="main-content"></main>
+</div>
+
+<div class="mobile-nav" id="mobile-nav"></div>
+
+<script>
+// ============================================================
+// ForensX Lab — Digital Forensics & Evidence Preservation Tool
+// Author: Aswin Mathew | aswinmathew.xyz
+// Version: 1.0.0
+// License: MIT — Copyright (c) 2026 Aswin Mathew
+// ACPO Compliant | Court-Admissible Report Generation
+// ============================================================
+
+const APP = {
+  currentTool: 'dashboard',
+  files: [],
+  evidence: [],
+  caseInfo: {},
+  cocEntries: [],
+  hashResults: [],
+  timeline: [],
+  analysisResults: {},
+  toastTimer: null
+};
+
+// ---- NAV STRUCTURE ----
+const NAV = [
+  { section: 'Overview', items: [
+    { id:'dashboard', icon:'📊', label:'Dashboard' },
+  ]},
+  { section: 'Acquisition', items: [
+    { id:'hash-calc', icon:'🔐', label:'Hash Calculator', badge:'SHA/MD5' },
+    { id:'hex-viewer', icon:'🔍', label:'Hex Viewer' },
+    { id:'metadata', icon:'📋', label:'Metadata Extractor' },
+    { id:'file-sig', icon:'🧬', label:'File Signatures' },
+    { id:'strings', icon:'📝', label:'String Extractor' },
+  ]},
+  { section: 'Analysis', items: [
+    { id:'hash-compare', icon:'⚖️', label:'Hash Comparator' },
+    { id:'base64', icon:'🔄', label:'Base64 Codec' },
+    { id:'entropy', icon:'📈', label:'Entropy Analysis' },
+    { id:'steganography', icon:'🖼️', label:'Stego Detector' },
+  ]},
+  { section: 'Reporting', items: [
+    { id:'case-info', icon:'📁', label:'Case Information' },
+    { id:'chain-custody', icon:'🔗', label:'Chain of Custody' },
+    { id:'evidence-log', icon:'🗄️', label:'Evidence Log' },
+    { id:'timeline-view', icon:'⏱️', label:'Timeline Analyzer' },
+    { id:'report-gen', icon:'📄', label:'Report Generator' },
+  ]},
+  { section: 'Utilities', items: [
+    { id:'acpo-ref', icon:'📖', label:'ACPO Guidelines' },
+    { id:'about', icon:'ℹ️', label:'About' },
+  ]}
+];
+
+// ---- RENDER SIDEBAR ----
+function renderSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = NAV.map(s => `
+    <div class="nav-section">
+      <div class="nav-section-title">${s.section}</div>
+      ${s.items.map(i => `
+        <div class="nav-item ${APP.currentTool===i.id?'active':''}" onclick="switchTool('${i.id}')">
+          <span class="icon">${i.icon}</span>
+          <span>${i.label}</span>
+          ${i.badge?`<span class="badge">${i.badge}</span>`:''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  // Mobile nav
+  const allItems = NAV.flatMap(s=>s.items).filter(i=>['dashboard','hash-calc','hex-viewer','metadata','chain-custody','report-gen'].includes(i.id));
+  document.getElementById('mobile-nav').innerHTML = `<div class="mobile-nav-inner">${allItems.map(i=>`
+    <button class="mobile-nav-btn ${APP.currentTool===i.id?'active':''}" onclick="switchTool('${i.id}')">
+      <span class="icon">${i.icon}</span>${i.label.split(' ')[0]}
+    </button>`).join('')}</div>`;
+}
+
+function switchTool(id) {
+  APP.currentTool = id;
+  renderSidebar();
+  renderMain();
+}
+
+// ---- UTILITY FUNCTIONS ----
+function toast(msg, type='success') {
+  const old = document.querySelector('.toast');
+  if(old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span>${type==='success'?'✅':type==='error'?'❌':'ℹ️'}</span> ${msg}`;
+  document.body.appendChild(t);
+  clearTimeout(APP.toastTimer);
+  APP.toastTimer = setTimeout(()=>{t.classList.add('hide');setTimeout(()=>t.remove(),300)},3000);
+}
+
+function formatBytes(b) {
+  if(b===0) return '0 B';
+  const k=1024,s=['B','KB','MB','GB','TB'];
+  const i=Math.floor(Math.log(b)/Math.log(k));
+  return parseFloat((b/Math.pow(k,i)).toFixed(2))+' '+s[i];
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'medium'});
+}
+
+function nowISO() { return new Date().toISOString(); }
+
+async function computeHash(buffer, algo) {
+  const hashBuffer = await crypto.subtle.digest(algo, buffer);
+  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function getFileSignature(bytes) {
+  const sigs = [
+    {sig:[0xFF,0xD8,0xFF],name:'JPEG Image',ext:'jpg'},
+    {sig:[0x89,0x50,0x4E,0x47],name:'PNG Image',ext:'png'},
+    {sig:[0x47,0x49,0x46,0x38],name:'GIF Image',ext:'gif'},
+    {sig:[0x50,0x4B,0x03,0x04],name:'ZIP/DOCX/XLSX Archive',ext:'zip'},
+    {sig:[0x25,0x50,0x44,0x46],name:'PDF Document',ext:'pdf'},
+    {sig:[0x52,0x61,0x72,0x21],name:'RAR Archive',ext:'rar'},
+    {sig:[0x7F,0x45,0x4C,0x46],name:'ELF Executable',ext:'elf'},
+    {sig:[0x4D,0x5A],name:'Windows PE Executable',ext:'exe'},
+    {sig:[0x1F,0x8B],name:'GZIP Archive',ext:'gz'},
+    {sig:[0x42,0x4D],name:'BMP Image',ext:'bmp'},
+    {sig:[0x49,0x44,0x33],name:'MP3 Audio (ID3)',ext:'mp3'},
+    {sig:[0x00,0x00,0x00,0x18,0x66,0x74,0x79,0x70],name:'MP4 Video',ext:'mp4'},
+    {sig:[0x00,0x00,0x00,0x1C,0x66,0x74,0x79,0x70],name:'MP4 Video',ext:'mp4'},
+    {sig:[0x00,0x00,0x00,0x20,0x66,0x74,0x79,0x70],name:'MP4 Video',ext:'mp4'},
+    {sig:[0x66,0x74,0x79,0x70],name:'MP4/MOV Video',ext:'mp4',offset:4},
+    {sig:[0x52,0x49,0x46,0x46],name:'RIFF (AVI/WAV)',ext:'avi'},
+    {sig:[0xD0,0xCF,0x11,0xE0],name:'MS Office Legacy (DOC/XLS/PPT)',ext:'doc'},
+    {sig:[0x37,0x7A,0xBC,0xAF],name:'7-Zip Archive',ext:'7z'},
+    {sig:[0x4F,0x67,0x67,0x53],name:'OGG Audio/Video',ext:'ogg'},
+    {sig:[0x1A,0x45,0xDF,0xA3],name:'WebM/MKV Video',ext:'webm'},
+  ];
+  const arr = new Uint8Array(bytes.slice(0,32));
+  for(const s of sigs) {
+    const offset = s.offset || 0;
+    let match = true;
+    for(let i=0; i<s.sig.length; i++) {
+      if(arr[offset+i] !== s.sig[i]) { match=false; break; }
+    }
+    if(match) return s;
+  }
+  return {name:'Unknown',ext:'???',sig:[]};
+}
+
+function calcEntropy(data) {
+  const freq = new Array(256).fill(0);
+  const bytes = new Uint8Array(data);
+  for(let i=0;i<bytes.length;i++) freq[bytes[i]]++;
+  let entropy = 0;
+  const len = bytes.length;
+  for(let i=0;i<256;i++) {
+    if(freq[i]===0) continue;
+    const p = freq[i]/len;
+    entropy -= p * Math.log2(p);
+  }
+  return entropy;
+}
+
+function extractStrings(data, minLen=4) {
+  const bytes = new Uint8Array(data);
+  const strings = [];
+  let current = '';
+  for(let i=0;i<bytes.length&&strings.length<500;i++) {
+    const c = bytes[i];
+    if(c>=32&&c<=126) { current += String.fromCharCode(c); }
+    else { if(current.length>=minLen) strings.push({offset:i-current.length,str:current}); current=''; }
+  }
+  if(current.length>=minLen) strings.push({offset:bytes.length-current.length,str:current});
+  return strings;
+}
+
+// ---- RENDER MAIN ----
+function renderMain() {
+  const el = document.getElementById('main-content');
+  el.innerHTML = '';
+  el.className = 'main fade-in';
+  const renderers = {
+    'dashboard': renderDashboard,
+    'hash-calc': renderHashCalc,
+    'hex-viewer': renderHexViewer,
+    'metadata': renderMetadata,
+    'file-sig': renderFileSig,
+    'strings': renderStrings,
+    'hash-compare': renderHashCompare,
+    'base64': renderBase64,
+    'entropy': renderEntropy,
+    'steganography': renderStego,
+    'case-info': renderCaseInfo,
+    'chain-custody': renderChainCustody,
+    'evidence-log': renderEvidenceLog,
+    'timeline-view': renderTimeline,
+    'report-gen': renderReportGen,
+    'acpo-ref': renderACPO,
+    'about': renderAbout,
+  };
+  (renderers[APP.currentTool] || renderDashboard)(el);
+}
+
+// ==== DASHBOARD ====
+function renderDashboard(el) {
+  el.innerHTML = `
+  <div style="margin-bottom:24px">
+    <h1 style="font-size:1.8rem;font-weight:700;margin-bottom:4px">ForensX Lab <span style="color:var(--accent)">Dashboard</span></h1>
+    <p style="color:var(--fg2);font-size:.9rem">Digital Forensics & Evidence Preservation — ACPO Compliant</p>
+  </div>
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="stat-card"><div class="value">${APP.evidence.length}</div><div class="label">Evidence Items</div></div>
+    <div class="stat-card"><div class="value">${APP.hashResults.length}</div><div class="label">Hashes Computed</div></div>
+    <div class="stat-card"><div class="value">${APP.cocEntries.length}</div><div class="label">CoC Entries</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><span class="icon">⚡</span> Quick Actions</div></div>
+      <div class="panel-body">
+        <div class="btn-group" style="flex-direction:column">
+          <button class="btn btn-primary btn-block" onclick="switchTool('hash-calc')">🔐 Compute File Hash</button>
+          <button class="btn btn-secondary btn-block" onclick="switchTool('hex-viewer')">🔍 Open Hex Viewer</button>
+          <button class="btn btn-secondary btn-block" onclick="switchTool('metadata')">📋 Extract Metadata</button>
+          <button class="btn btn-secondary btn-block" onclick="switchTool('chain-custody')">🔗 Log Chain of Custody</button>
+          <button class="btn btn-secondary btn-block" onclick="switchTool('report-gen')">📄 Generate Report</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title"><span class="icon">📁</span> Case Status</div></div>
+      <div class="panel-body">
+        ${APP.caseInfo.caseNumber ? `
+          <table class="data-table">
+            <tr><td class="key">Case #</td><td class="val">${APP.caseInfo.caseNumber}</td></tr>
+            <tr><td class="key">Examiner</td><td class="val">${APP.caseInfo.examiner||'—'}</td></tr>
+            <tr><td class="key">Status</td><td class="val"><span class="tag tag-green">${APP.caseInfo.status||'Open'}</span></td></tr>
+            <tr><td class="key">Date</td><td class="val">${APP.caseInfo.date||new Date().toLocaleDateString()}</td></tr>
+          </table>
+        ` : `
+          <div style="text-align:center;padding:20px;color:var(--fg3)">
+            <div style="font-size:2rem;margin-bottom:8px">📁</div>
+            <p>No case information set</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="switchTool('case-info')">Set Up Case</button>
+          </div>
+        `}
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🛡️</span> ACPO Principles Quick Reference</div></div>
+    <div class="panel-body" style="font-size:.85rem;line-height:1.8;color:var(--fg2)">
+      <strong style="color:var(--accent)">Principle 1:</strong> No action should change data which may subsequently be relied upon in court.<br>
+      <strong style="color:var(--accent)">Principle 2:</strong> Where a person finds it necessary to access original data, they must be competent and able to explain their actions.<br>
+      <strong style="color:var(--accent)">Principle 3:</strong> An audit trail of all processes applied to digital evidence should be maintained.<br>
+      <strong style="color:var(--accent)">Principle 4:</strong> The person in charge of the investigation has overall responsibility for ensuring the law and these principles are adhered to.
+    </div>
+  </div>`;
+}
+
+// ==== HASH CALCULATOR ====
+function renderHashCalc(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🔐</span> Cryptographic Hash Calculator</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="hash-drop">
+        <span class="icon">📂</span>
+        <p>Drop file here or click to browse</p>
+        <p class="hint">Computes MD5, SHA-1, SHA-256, SHA-512 simultaneously</p>
+        <input type="file" id="hash-file" onchange="handleHashFile(this)">
+      </div>
+      <div id="hash-progress" style="display:none;margin-top:16px">
+        <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--fg2)">
+          <span>Computing hashes...</span><span id="hash-pct">0%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="hash-bar" style="width:0%"></div></div>
+      </div>
+      <div id="hash-results"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">✏️</span> Text Hash</div></div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label class="form-label">Input Text</label>
+        <textarea id="hash-text" placeholder="Enter text to hash..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="hashText()">Compute Hash</button>
+      <div id="text-hash-results" style="margin-top:16px"></div>
+    </div>
+  </div>
+  ${APP.hashResults.length ? `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📜</span> Hash History (${APP.hashResults.length})</div></div>
+    <div class="panel-body">
+      ${APP.hashResults.map((h,i)=>`
+        <div class="evidence-entry">
+          <div class="num">${i+1}</div>
+          <div style="flex:1;overflow:hidden">
+            <div style="font-weight:600;margin-bottom:4px">${h.name}</div>
+            <div style="font-size:.75rem;color:var(--fg3)">${formatBytes(h.size)} | ${h.time}</div>
+            <div style="font-family:var(--font-mono);font-size:.72rem;margin-top:6px;color:var(--cyan);word-break:break-all">SHA-256: ${h.sha256}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>` : ''}`;
+
+  setupDropzone('hash-drop','hash-file');
+}
+
+async function handleHashFile(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const prog = document.getElementById('hash-progress');
+  prog.style.display = 'block';
+  const bar = document.getElementById('hash-bar');
+  const pct = document.getElementById('hash-pct');
+  bar.style.width = '10%'; pct.textContent = '10%';
+
+  const buffer = await file.arrayBuffer();
+  bar.style.width = '30%'; pct.textContent = '30%';
+
+  const [md5str, sha1, sha256, sha512] = await Promise.all([
+    computeMD5(new Uint8Array(buffer)),
+    computeHash(buffer, 'SHA-1'),
+    computeHash(buffer, 'SHA-256'),
+    computeHash(buffer, 'SHA-512'),
+  ]);
+  bar.style.width = '100%'; pct.textContent = '100%';
+
+  const sig = getFileSignature(buffer);
+  const ent = calcEntropy(buffer);
+
+  const result = {name:file.name,size:file.size,time:formatDate(new Date()),md5:md5str,sha1,sha256,sha512,type:sig.name,entropy:ent.toFixed(4)};
+  APP.hashResults.push(result);
+  APP.timeline.push({time:nowISO(),event:`Hash computed for "${file.name}"`,tool:'Hash Calculator'});
+
+  document.getElementById('hash-results').innerHTML = `
+  <div class="result-box success" style="margin-top:16px">
+<strong>File:</strong> ${file.name}
+<strong>Size:</strong> ${formatBytes(file.size)}
+<strong>Type:</strong> ${sig.name} (${sig.ext})
+<strong>Entropy:</strong> ${ent.toFixed(4)} / 8.0
+<strong>Last Modified:</strong> ${formatDate(file.lastModified)}
+
+<strong style="color:var(--accent)">── Hash Values ──</strong>
+<strong>MD5:</strong>    ${md5str}
+<strong>SHA-1:</strong>   ${sha1}
+<strong>SHA-256:</strong> ${sha256}
+<strong>SHA-512:</strong> ${sha512}
+</div>
+  <div class="btn-group" style="margin-top:12px">
+    <button class="btn btn-secondary btn-sm" onclick="copyToClip('${sha256}')">📋 Copy SHA-256</button>
+    <button class="btn btn-secondary btn-sm" onclick="addToEvidence('${file.name}','${sha256}','${formatBytes(file.size)}','${sig.name}')">🗄️ Add to Evidence</button>
+  </div>`;
+
+  toast(`Hashes computed for ${file.name}`);
+}
+
+async function hashText() {
+  const text = document.getElementById('hash-text').value;
+  if(!text) return toast('Enter text to hash','error');
+  const buffer = new TextEncoder().encode(text);
+  const [md5str,sha1,sha256,sha512] = await Promise.all([
+    computeMD5(buffer),computeHash(buffer.buffer,'SHA-1'),computeHash(buffer.buffer,'SHA-256'),computeHash(buffer.buffer,'SHA-512')
+  ]);
+  document.getElementById('text-hash-results').innerHTML = `
+  <div class="result-box success">
+<strong>MD5:</strong>    ${md5str}
+<strong>SHA-1:</strong>   ${sha1}
+<strong>SHA-256:</strong> ${sha256}
+<strong>SHA-512:</strong> ${sha512}
+</div>`;
+}
+
+// Simple MD5 implementation
+function computeMD5(data) {
+  // MD5 via Web — using a fast JS implementation
+  function md5(buffer) {
+    function safeAdd(x,y){var l=(x&0xFFFF)+(y&0xFFFF);return(((x>>16)+(y>>16)+(l>>16))<<16)|(l&0xFFFF)}
+    function bitRotL(x,c){return(x<<c)|(x>>>(32-c))}
+    function md5cmn(q,a,b,x,s,t){return safeAdd(bitRotL(safeAdd(safeAdd(a,q),safeAdd(x,t)),s),b)}
+    function ff(a,b,c,d,x,s,t){return md5cmn((b&c)|((~b)&d),a,b,x,s,t)}
+    function gg(a,b,c,d,x,s,t){return md5cmn((b&d)|(c&(~d)),a,b,x,s,t)}
+    function hh(a,b,c,d,x,s,t){return md5cmn(b^c^d,a,b,x,s,t)}
+    function ii(a,b,c,d,x,s,t){return md5cmn(c^(b|(~d)),a,b,x,s,t)}
+    var bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    var n=bytes.length;
+    var i,j,k;
+    var tail=[0x80];
+    for(i=n+1;i%64!==56;i++) tail.push(0);
+    for(i=0;i<8;i++) tail.push(((n*8)>>(i*8))&0xFF);
+    if(n*8>0xFFFFFFFF) { /* handle >512MB later */ }
+    var all=new Uint8Array(n+tail.length);
+    all.set(bytes,0);
+    all.set(tail,n);
+    var a=1732584193,b=-271733879,c=-1732584194,d=271733878;
+    for(i=0;i<all.length;i+=64){
+      var w=[];
+      for(j=0;j<16;j++) w[j]=all[i+j*4]|(all[i+j*4+1]<<8)|(all[i+j*4+2]<<16)|(all[i+j*4+3]<<24);
+      var aa=a,bb=b,cc=c,dd=d;
+      a=ff(a,b,c,d,w[0],7,-680876936);d=ff(d,a,b,c,w[1],12,-389564586);c=ff(c,d,a,b,w[2],17,606105819);b=ff(b,c,d,a,w[3],22,-1044525330);
+      a=ff(a,b,c,d,w[4],7,-176418897);d=ff(d,a,b,c,w[5],12,1200080426);c=ff(c,d,a,b,w[6],17,-1473231341);b=ff(b,c,d,a,w[7],22,-45705983);
+      a=ff(a,b,c,d,w[8],7,1770035416);d=ff(d,a,b,c,w[9],12,-1958414417);c=ff(c,d,a,b,w[10],17,-42063);b=ff(b,c,d,a,w[11],22,-1990404162);
+      a=ff(a,b,c,d,w[12],7,1804603682);d=ff(d,a,b,c,w[13],12,-40341101);c=ff(c,d,a,b,w[14],17,-1502002290);b=ff(b,c,d,a,w[15],22,1236535329);
+      a=gg(a,b,c,d,w[1],5,-165796510);d=gg(d,a,b,c,w[6],9,-1069501632);c=gg(c,d,a,b,w[11],14,643717713);b=gg(b,c,d,a,w[0],20,-373897302);
+      a=gg(a,b,c,d,w[5],5,-701558691);d=gg(d,a,b,c,w[10],9,38016083);c=gg(c,d,a,b,w[15],14,-660478335);b=gg(b,c,d,a,w[4],20,-405537848);
+      a=gg(a,b,c,d,w[9],5,568446438);d=gg(d,a,b,c,w[14],9,-1019803690);c=gg(c,d,a,b,w[3],14,-187363961);b=gg(b,c,d,a,w[8],20,1163531501);
+      a=gg(a,b,c,d,w[13],5,-1444681467);d=gg(d,a,b,c,w[2],9,-51403784);c=gg(c,d,a,b,w[7],14,1735328473);b=gg(b,c,d,a,w[12],20,-1926607734);
+      a=hh(a,b,c,d,w[5],4,-378558);d=hh(d,a,b,c,w[8],11,-2022574463);c=hh(c,d,a,b,w[11],16,1839030562);b=hh(b,c,d,a,w[14],23,-35309556);
+      a=hh(a,b,c,d,w[1],4,-1530992060);d=hh(d,a,b,c,w[4],11,1272893353);c=hh(c,d,a,b,w[7],16,-155497632);b=hh(b,c,d,a,w[10],23,-1094730640);
+      a=hh(a,b,c,d,w[13],4,681279174);d=hh(d,a,b,c,w[0],11,-358537222);c=hh(c,d,a,b,w[3],16,-722521979);b=hh(b,c,d,a,w[6],23,76029189);
+      a=hh(a,b,c,d,w[9],4,-640364487);d=hh(d,a,b,c,w[12],11,-421815835);c=hh(c,d,a,b,w[15],16,530742520);b=hh(b,c,d,a,w[2],23,-995338651);
+      a=ii(a,b,c,d,w[0],6,-198630844);d=ii(d,a,b,c,w[7],10,1126891415);c=ii(c,d,a,b,w[14],15,-1416354905);b=ii(b,c,d,a,w[5],21,-57434055);
+      a=ii(a,b,c,d,w[12],6,1700485571);d=ii(d,a,b,c,w[3],10,-1894986606);c=ii(c,d,a,b,w[10],15,-1051523);b=ii(b,c,d,a,w[1],21,-2054922799);
+      a=ii(a,b,c,d,w[8],6,1873313359);d=ii(d,a,b,c,w[15],10,-30611744);c=ii(c,d,a,b,w[6],15,-1560198380);b=ii(b,c,d,a,w[13],21,1309151649);
+      a=ii(a,b,c,d,w[4],6,-145523070);d=ii(d,a,b,c,w[11],10,-1120210379);c=ii(c,d,a,b,w[2],15,718787259);b=ii(b,c,d,a,w[9],21,-343485551);
+      a=safeAdd(a,aa);b=safeAdd(b,bb);c=safeAdd(c,cc);d=safeAdd(d,dd);
+    }
+    return [a,b,c,d].map(v=>{
+      var s='';for(var i=0;i<4;i++)s+=('0'+((v>>(i*8))&0xFF).toString(16)).slice(-2);return s;
+    }).join('');
+  }
+  return Promise.resolve(md5(data));
+}
+
+// ==== HEX VIEWER ====
+function renderHexViewer(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🔍</span> Hex Viewer / Binary Inspector</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="hex-drop">
+        <span class="icon">📂</span>
+        <p>Drop file to inspect binary content</p>
+        <p class="hint">View raw hex dump with ASCII representation</p>
+        <input type="file" id="hex-file" onchange="handleHexFile(this)">
+      </div>
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label">Display Rows</label>
+        <select id="hex-rows"><option value="64">64 rows</option><option value="128">128 rows</option><option value="256" selected>256 rows</option><option value="512">512 rows</option><option value="1024">1024 rows</option></select>
+      </div>
+    </div>
+  </div>
+  <div id="hex-output"></div>`;
+  setupDropzone('hex-drop','hex-file');
+}
+
+async function handleHexFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const rows = parseInt(document.getElementById('hex-rows').value);
+  const maxBytes = rows * 16;
+  const sig = getFileSignature(buffer);
+
+  let html = `<div class="panel"><div class="panel-header"><div class="panel-title"><span class="icon">🔍</span> ${file.name} <span class="tag tag-blue" style="margin-left:8px">${sig.name}</span> <span class="tag tag-green">${formatBytes(file.size)}</span></div></div><div class="panel-body"><div class="hex-view">`;
+
+  for(let off=0; off<Math.min(bytes.length,maxBytes); off+=16) {
+    const chunk = bytes.slice(off, Math.min(off+16, bytes.length));
+    const offsetStr = off.toString(16).toUpperCase().padStart(8,'0');
+    let hexStr = '', asciiStr = '';
+    for(let i=0;i<16;i++) {
+      if(i<chunk.length) {
+        hexStr += `<span>${chunk[i].toString(16).toUpperCase().padStart(2,'0')}</span> `;
+        asciiStr += (chunk[i]>=32&&chunk[i]<=126) ? String.fromCharCode(chunk[i]) : `<span class="hex-nonprint">.</span>`;
+      } else { hexStr += '   '; asciiStr += ' '; }
+    }
+    html += `<div class="hex-row"><span class="hex-offset">${offsetStr}</span><span class="hex-bytes">${hexStr}</span><span class="hex-ascii">${asciiStr}</span></div>`;
+  }
+  html += `</div></div></div>`;
+  if(bytes.length > maxBytes) html += `<p style="text-align:center;color:var(--fg3);margin-top:8px;font-size:.8rem">Showing first ${formatBytes(maxBytes)} of ${formatBytes(bytes.length)}</p>`;
+
+  document.getElementById('hex-output').innerHTML = html;
+  APP.timeline.push({time:nowISO(),event:`Hex viewed: "${file.name}"`,tool:'Hex Viewer'});
+  toast(`Hex view loaded: ${file.name}`);
+}
+
+// ==== METADATA EXTRACTOR ====
+function renderMetadata(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📋</span> File Metadata Extractor</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="meta-drop">
+        <span class="icon">📂</span>
+        <p>Drop file to extract metadata</p>
+        <p class="hint">Extracts file properties, EXIF data (images), and embedded metadata</p>
+        <input type="file" id="meta-file" onchange="handleMetaFile(this)">
+      </div>
+    </div>
+  </div>
+  <div id="meta-output"></div>`;
+  setupDropzone('meta-drop','meta-file');
+}
+
+async function handleMetaFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const sig = getFileSignature(buffer);
+  const ent = calcEntropy(buffer);
+  const sha256 = await computeHash(buffer, 'SHA-256');
+
+  let meta = {
+    'File Name': file.name,
+    'File Size': formatBytes(file.size) + ` (${file.size.toLocaleString()} bytes)`,
+    'MIME Type': file.type || 'application/octet-stream',
+    'Last Modified': formatDate(file.lastModified),
+    'File Signature': sig.name,
+    'Expected Extension': `.${sig.ext}`,
+    'Entropy': `${ent.toFixed(4)} / 8.0`,
+    'Entropy Assessment': ent > 7.5 ? '🔴 High (likely encrypted/compressed)' : ent > 6 ? '🟡 Medium (mixed content)' : '🟢 Low (structured/text data)',
+    'SHA-256': sha256,
+  };
+
+  // Try EXIF for images
+  let exifData = {};
+  if(file.type.startsWith('image/') || ['jpg','png','gif','bmp'].includes(sig.ext)) {
+    exifData = extractBasicExif(new Uint8Array(buffer));
+  }
+
+  let html = `<div class="panel"><div class="panel-header"><div class="panel-title"><span class="icon">📋</span> Metadata Results</div></div><div class="panel-body"><table class="data-table">`;
+  for(const [k,v] of Object.entries(meta)) {
+    html += `<tr><td class="key">${k}</td><td class="val">${v}</td></tr>`;
+  }
+  if(Object.keys(exifData).length) {
+    html += `<tr><td colspan="2" style="background:var(--bg3);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:10px 14px">EXIF / Image Data</td></tr>`;
+    for(const [k,v] of Object.entries(exifData)) {
+      html += `<tr><td class="key">${k}</td><td class="val">${v}</td></tr>`;
+    }
+  }
+  html += `</table></div><div class="panel-footer">
+    <button class="btn btn-secondary btn-sm" onclick="copyToClip(JSON.stringify(${JSON.stringify(meta).replace(/'/g,"\\'")}))">📋 Copy Metadata</button>
+    <button class="btn btn-secondary btn-sm" onclick="addToEvidence('${file.name}','${sha256}','${formatBytes(file.size)}','${sig.name}')">🗄️ Add to Evidence</button>
+  </div></div>`;
+
+  document.getElementById('meta-output').innerHTML = html;
+  APP.timeline.push({time:nowISO(),event:`Metadata extracted: "${file.name}"`,tool:'Metadata Extractor'});
+  toast(`Metadata extracted: ${file.name}`);
+}
+
+function extractBasicExif(bytes) {
+  const data = {};
+  // Basic JPEG EXIF parsing
+  if(bytes[0]===0xFF && bytes[1]===0xD8) {
+    data['Format'] = 'JPEG';
+    // Find dimensions from SOF marker
+    for(let i=2;i<bytes.length-10;i++) {
+      if(bytes[i]===0xFF && (bytes[i+1]>=0xC0 && bytes[i+1]<=0xCF) && bytes[i+1]!==0xC4 && bytes[i+1]!==0xC8 && bytes[i+1]!==0xCC) {
+        const h = (bytes[i+5]<<8)|bytes[i+6];
+        const w = (bytes[i+7]<<8)|bytes[i+8];
+        data['Dimensions'] = `${w} × ${h} px`;
+        data['Megapixels'] = ((w*h)/1000000).toFixed(2)+' MP';
+        break;
+      }
+    }
+  } else if(bytes[0]===0x89 && bytes[1]===0x50) {
+    data['Format'] = 'PNG';
+    if(bytes.length > 24) {
+      const w = (bytes[16]<<24)|(bytes[17]<<16)|(bytes[18]<<8)|bytes[19];
+      const h = (bytes[20]<<24)|(bytes[21]<<16)|(bytes[22]<<8)|bytes[23];
+      data['Dimensions'] = `${w} × ${h} px`;
+      data['Megapixels'] = ((w*h)/1000000).toFixed(2)+' MP';
+      data['Bit Depth'] = bytes[24];
+      const colorTypes = {0:'Grayscale',2:'RGB',3:'Indexed',4:'Grayscale+Alpha',6:'RGBA'};
+      data['Color Type'] = colorTypes[bytes[25]] || bytes[25];
+    }
+  }
+  return data;
+}
+
+// ==== FILE SIGNATURES ====
+function renderFileSig(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🧬</span> File Signature / Magic Bytes Analyzer</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="sig-drop">
+        <span class="icon">📂</span>
+        <p>Drop file to analyze magic bytes</p>
+        <p class="hint">Detects true file type regardless of extension — critical for evidence integrity</p>
+        <input type="file" id="sig-file" onchange="handleSigFile(this)">
+      </div>
+    </div>
+  </div>
+  <div id="sig-output"></div>
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📖</span> Common File Signatures Reference</div></div>
+    <div class="panel-body">
+      <table class="data-table">
+        <tr><th>Signature</th><th>Type</th><th>Extension</th></tr>
+        <tr><td class="val">FF D8 FF</td><td>JPEG Image</td><td>.jpg</td></tr>
+        <tr><td class="val">89 50 4E 47</td><td>PNG Image</td><td>.png</td></tr>
+        <tr><td class="val">25 50 44 46</td><td>PDF Document</td><td>.pdf</td></tr>
+        <tr><td class="val">50 4B 03 04</td><td>ZIP/Office XML</td><td>.zip/.docx</td></tr>
+        <tr><td class="val">4D 5A</td><td>Windows Executable</td><td>.exe/.dll</td></tr>
+        <tr><td class="val">7F 45 4C 46</td><td>Linux ELF Binary</td><td>.elf</td></tr>
+        <tr><td class="val">52 61 72 21</td><td>RAR Archive</td><td>.rar</td></tr>
+        <tr><td class="val">D0 CF 11 E0</td><td>MS Office Legacy</td><td>.doc/.xls</td></tr>
+        <tr><td class="val">1F 8B</td><td>GZIP Archive</td><td>.gz</td></tr>
+        <tr><td class="val">1A 45 DF A3</td><td>WebM/MKV</td><td>.webm/.mkv</td></tr>
+      </table>
+    </div>
+  </div>`;
+  setupDropzone('sig-drop','sig-file');
+}
+
+async function handleSigFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const sig = getFileSignature(buffer);
+  const bytes = new Uint8Array(buffer.slice(0,32));
+  const hexStr = Array.from(bytes).map(b=>b.toString(16).toUpperCase().padStart(2,'0')).join(' ');
+  const ext = file.name.split('.').pop().toLowerCase();
+  const mismatch = sig.ext !== '???' && sig.ext !== ext && !(['zip','docx','xlsx','pptx'].includes(ext) && sig.ext==='zip');
+
+  document.getElementById('sig-output').innerHTML = `
+  <div class="panel"><div class="panel-header"><div class="panel-title"><span class="icon">🧬</span> Analysis Result</div></div><div class="panel-body">
+    <table class="data-table">
+      <tr><td class="key">File Name</td><td class="val">${file.name}</td></tr>
+      <tr><td class="key">Extension</td><td class="val">.${ext}</td></tr>
+      <tr><td class="key">Detected Type</td><td class="val"><span class="tag ${mismatch?'tag-red':'tag-green'}">${sig.name}</span></td></tr>
+      <tr><td class="key">Expected Extension</td><td class="val">.${sig.ext}</td></tr>
+      <tr><td class="key">Extension Match</td><td class="val">${mismatch?'<span class="tag tag-red">⚠️ MISMATCH — Possible tampering or wrong extension</span>':'<span class="tag tag-green">✅ Match</span>'}</td></tr>
+      <tr><td class="key">Magic Bytes (32)</td><td class="val" style="font-size:.72rem">${hexStr}</td></tr>
+    </table>
+  </div></div>`;
+
+  APP.timeline.push({time:nowISO(),event:`File signature analyzed: "${file.name}" → ${sig.name}${mismatch?' ⚠️ MISMATCH':''}`,tool:'File Signatures'});
+  toast(mismatch?`⚠️ Extension mismatch detected!`:`File signature verified: ${sig.name}`, mismatch?'error':'success');
+}
+
+// ==== STRING EXTRACTOR ====
+function renderStrings(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📝</span> String Extractor</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="str-drop">
+        <span class="icon">📂</span>
+        <p>Drop binary file to extract readable strings</p>
+        <p class="hint">Extracts ASCII strings — useful for finding URLs, emails, paths, and hidden text</p>
+        <input type="file" id="str-file" onchange="handleStrFile(this)">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">Minimum String Length</label>
+        <select id="str-min"><option value="4" selected>4 characters</option><option value="6">6 characters</option><option value="8">8 characters</option><option value="12">12 characters</option></select>
+      </div>
+    </div>
+  </div>
+  <div id="str-output"></div>`;
+  setupDropzone('str-drop','str-file');
+}
+
+async function handleStrFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const minLen = parseInt(document.getElementById('str-min').value);
+  const strings = extractStrings(buffer, minLen);
+
+  // Categorize
+  const urls = strings.filter(s=>/https?:\/\/|www\./i.test(s.str));
+  const emails = strings.filter(s=>/[\w.-]+@[\w.-]+\.\w+/.test(s.str));
+  const paths = strings.filter(s=>/[A-Z]:\\|\/[a-z]+\//i.test(s.str));
+
+  let html = `<div class="panel"><div class="panel-header"><div class="panel-title"><span class="icon">📝</span> Extracted Strings (${strings.length})</div></div><div class="panel-body">`;
+  html += `<div class="grid-3" style="margin-bottom:16px">
+    <div class="stat-card"><div class="value">${strings.length}</div><div class="label">Total Strings</div></div>
+    <div class="stat-card"><div class="value">${urls.length}</div><div class="label">URLs Found</div></div>
+    <div class="stat-card"><div class="value">${emails.length}</div><div class="label">Emails Found</div></div>
+  </div>`;
+
+  if(urls.length) {
+    html += `<div style="margin-bottom:12px"><strong style="color:var(--accent);font-size:.8rem">🌐 URLs:</strong><div class="result-box" style="margin-top:4px;max-height:150px">${urls.map(s=>`0x${s.offset.toString(16).padStart(8,'0')}  ${escHtml(s.str)}`).join('\n')}</div></div>`;
+  }
+  if(emails.length) {
+    html += `<div style="margin-bottom:12px"><strong style="color:var(--orange);font-size:.8rem">📧 Emails:</strong><div class="result-box" style="margin-top:4px;max-height:150px">${emails.map(s=>`0x${s.offset.toString(16).padStart(8,'0')}  ${escHtml(s.str)}`).join('\n')}</div></div>`;
+  }
+  if(paths.length) {
+    html += `<div style="margin-bottom:12px"><strong style="color:var(--purple);font-size:.8rem">📁 Paths:</strong><div class="result-box" style="margin-top:4px;max-height:150px">${paths.map(s=>`0x${s.offset.toString(16).padStart(8,'0')}  ${escHtml(s.str)}`).join('\n')}</div></div>`;
+  }
+
+  html += `<div><strong style="color:var(--fg2);font-size:.8rem">All Strings:</strong><div class="result-box" style="margin-top:4px">${strings.map(s=>`0x${s.offset.toString(16).padStart(8,'0')}  ${escHtml(s.str)}`).join('\n')}</div></div>`;
+  html += `</div></div>`;
+
+  document.getElementById('str-output').innerHTML = html;
+  APP.timeline.push({time:nowISO(),event:`Strings extracted from "${file.name}": ${strings.length} found`,tool:'String Extractor'});
+  toast(`${strings.length} strings extracted`);
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ==== HASH COMPARATOR ====
+function renderHashCompare(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">⚖️</span> Hash Integrity Comparator</div></div>
+    <div class="panel-body">
+      <p style="color:var(--fg2);font-size:.85rem;margin-bottom:16px">Compare two hash values to verify evidence integrity. Essential for court-admissible digital evidence under ACPO Principle 1.</p>
+      <div class="form-group">
+        <label class="form-label">Hash Value 1 (Original / Known Good)</label>
+        <input type="text" id="hash1" placeholder="Enter or paste first hash value...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hash Value 2 (Acquired / Evidence Copy)</label>
+        <input type="text" id="hash2" placeholder="Enter or paste second hash value...">
+      </div>
+      <button class="btn btn-primary" onclick="compareHashes()">⚖️ Compare Hashes</button>
+      <div id="compare-result" style="margin-top:16px"></div>
+    </div>
+  </div>`;
+}
+
+function compareHashes() {
+  const h1 = document.getElementById('hash1').value.trim().toLowerCase();
+  const h2 = document.getElementById('hash2').value.trim().toLowerCase();
+  if(!h1||!h2) return toast('Enter both hash values','error');
+  const match = h1 === h2;
+  document.getElementById('compare-result').innerHTML = `
+  <div class="result-box ${match?'success':'error'}">
+<strong>Result:</strong> ${match?'✅ MATCH — Evidence integrity VERIFIED':'❌ MISMATCH — Evidence may be TAMPERED'}
+<strong>Hash 1:</strong> ${h1}
+<strong>Hash 2:</strong> ${h2}
+<strong>Length:</strong> ${h1.length} chars / ${h2.length} chars
+<strong>Algorithm:</strong> ${h1.length===32?'MD5':h1.length===40?'SHA-1':h1.length===64?'SHA-256':h1.length===128?'SHA-512':'Unknown'} (estimated)
+<strong>Timestamp:</strong> ${formatDate(new Date())}
+${match?'':'<strong style="color:var(--red)">⚠️ WARNING: Data integrity cannot be confirmed. This evidence may not be admissible under ACPO Principle 1.</strong>'}
+</div>`;
+  APP.timeline.push({time:nowISO(),event:`Hash comparison: ${match?'MATCH':'MISMATCH'}`,tool:'Hash Comparator'});
+}
+
+// ==== BASE64 CODEC ====
+function renderBase64(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title"><span class="icon">🔄</span> Base64 Encoder / Decoder</div>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label class="form-label">Input</label>
+        <textarea id="b64-input" rows="6" placeholder="Paste text or Base64 data..."></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="b64Encode()">Encode →</button>
+        <button class="btn btn-secondary" onclick="b64Decode()">← Decode</button>
+        <button class="btn btn-secondary" onclick="b64FromFile()">📂 From File</button>
+      </div>
+      <input type="file" id="b64-file" style="display:none" onchange="handleB64File(this)">
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label">Output</label>
+        <textarea id="b64-output" rows="6" readonly></textarea>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="copyToClip(document.getElementById('b64-output').value)">📋 Copy Output</button>
+    </div>
+  </div>`;
+}
+
+function b64Encode() {
+  try { document.getElementById('b64-output').value = btoa(unescape(encodeURIComponent(document.getElementById('b64-input').value))); toast('Encoded'); } catch(e) { toast('Encoding failed','error'); }
+}
+function b64Decode() {
+  try { document.getElementById('b64-output').value = decodeURIComponent(escape(atob(document.getElementById('b64-input').value.trim()))); toast('Decoded'); } catch(e) { toast('Invalid Base64','error'); }
+}
+function b64FromFile() { document.getElementById('b64-file').click(); }
+async function handleB64File(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for(let i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
+  document.getElementById('b64-input').value = `data:${file.type||'application/octet-stream'};base64,${btoa(binary)}`;
+  toast(`File loaded: ${file.name}`);
+}
+
+// ==== ENTROPY ANALYSIS ====
+function renderEntropy(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📈</span> Shannon Entropy Analysis</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="ent-drop">
+        <span class="icon">📂</span>
+        <p>Drop file to analyze entropy distribution</p>
+        <p class="hint">Detects encryption, compression, and hidden data patterns</p>
+        <input type="file" id="ent-file" onchange="handleEntropyFile(this)">
+      </div>
+    </div>
+  </div>
+  <div id="ent-output"></div>`;
+  setupDropzone('ent-drop','ent-file');
+}
+
+async function handleEntropyFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const totalEntropy = calcEntropy(buffer);
+
+  // Block entropy (1KB blocks)
+  const blockSize = 1024;
+  const blocks = [];
+  for(let i=0; i<bytes.length; i+=blockSize) {
+    const block = buffer.slice(i, Math.min(i+blockSize, bytes.length));
+    blocks.push({offset:i, entropy:calcEntropy(block)});
+  }
+
+  // Byte frequency
+  const freq = new Array(256).fill(0);
+  for(let i=0;i<bytes.length;i++) freq[bytes[i]]++;
+  const maxFreq = Math.max(...freq);
+
+  // Build bar chart of entropy blocks
+  const maxBlocks = Math.min(blocks.length, 100);
+  const step = Math.max(1, Math.floor(blocks.length / maxBlocks));
+  const sampledBlocks = [];
+  for(let i=0; i<blocks.length; i+=step) sampledBlocks.push(blocks[i]);
+
+  let html = `<div class="panel"><div class="panel-header"><div class="panel-title"><span class="icon">📈</span> Entropy Report — ${file.name}</div></div><div class="panel-body">`;
+  html += `<div class="grid-3" style="margin-bottom:16px">
+    <div class="stat-card"><div class="value">${totalEntropy.toFixed(4)}</div><div class="label">Overall Entropy (max 8.0)</div></div>
+    <div class="stat-card"><div class="value">${(totalEntropy/8*100).toFixed(1)}%</div><div class="label">Randomness</div></div>
+    <div class="stat-card"><div class="value">${totalEntropy>7.5?'🔴 High':totalEntropy>6?'🟡 Medium':'🟢 Low'}</div><div class="label">Assessment</div></div>
+  </div>`;
+
+  html += `<div style="margin-bottom:16px"><strong style="color:var(--accent);font-size:.8rem">Entropy by Block (${blockSize}B chunks):</strong>
+  <div style="display:flex;align-items:flex-end;height:120px;gap:1px;margin-top:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px;overflow:hidden">`;
+  sampledBlocks.forEach(b => {
+    const h = (b.entropy/8)*100;
+    const color = b.entropy>7.5?'var(--red)':b.entropy>6?'var(--orange)':'var(--accent)';
+    html += `<div style="flex:1;min-width:2px;height:${h}%;background:${color};border-radius:1px" title="Offset 0x${b.offset.toString(16)}: ${b.entropy.toFixed(2)}"></div>`;
+  });
+  html += `</div></div>`;
+
+  // Assessment
+  html += `<div class="result-box ${totalEntropy>7.5?'error':'success'}">
+<strong>Assessment:</strong>
+${totalEntropy>7.5?'File appears to be encrypted or compressed. High entropy throughout suggests data has been transformed to remove patterns.':
+totalEntropy>6?'File contains a mix of structured and random data. This is typical for documents with embedded media or compressed sections.':
+'File contains structured, readable data. Low entropy suggests text or formatted content with identifiable patterns.'}
+
+<strong>Forensic Relevance:</strong>
+${totalEntropy>7.5?'⚠️ Encrypted files may require key recovery or authorized decryption before content analysis.':
+'Standard analysis procedures should be effective for content examination.'}
+</div>`;
+  html += `</div></div>`;
+
+  document.getElementById('ent-output').innerHTML = html;
+  APP.timeline.push({time:nowISO(),event:`Entropy analysis: "${file.name}" → ${totalEntropy.toFixed(4)}`,tool:'Entropy Analysis'});
+  toast(`Entropy: ${totalEntropy.toFixed(4)}/8.0`);
+}
+
+// ==== STEGANOGRAPHY DETECTOR ====
+function renderStego(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🖼️</span> Steganography Detector</div></div>
+    <div class="panel-body">
+      <div class="dropzone" id="stego-drop">
+        <span class="icon">🖼️</span>
+        <p>Drop an image file to analyze for hidden data</p>
+        <p class="hint">Checks LSB patterns, file size anomalies, and appended data</p>
+        <input type="file" id="stego-file" accept="image/*" onchange="handleStegoFile(this)">
+      </div>
+    </div>
+  </div>
+  <div id="stego-output"></div>`;
+  setupDropzone('stego-drop','stego-file');
+}
+
+async function handleStegoFile(input) {
+  const file = input.files[0]; if(!file) return;
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const sig = getFileSignature(buffer);
+  const entropy = calcEntropy(buffer);
+
+  let findings = [];
+  let risk = 'LOW';
+
+  // Check for appended data after JPEG EOI marker
+  if(sig.ext==='jpg') {
+    for(let i=bytes.length-2;i>0;i--) {
+      if(bytes[i]===0xFF && bytes[i+1]===0xD9) {
+        if(i < bytes.length-2) {
+          findings.push({level:'HIGH',msg:`Data found after JPEG EOI marker at offset 0x${i.toString(16)} — ${bytes.length-i-2} bytes of appended data detected`});
+          risk = 'HIGH';
+        }
+        break;
+      }
+    }
+  }
+
+  // Check for appended data after PNG IEND
+  if(sig.ext==='png') {
+    const iend = [0x49,0x45,0x4E,0x44,0xAE,0x42,0x60,0x82];
+    for(let i=bytes.length-8;i>0;i--) {
+      let match=true;
+      for(let j=0;j<8;j++) if(bytes[i+j]!==iend[j]){match=false;break;}
+      if(match && i+8 < bytes.length) {
+        findings.push({level:'HIGH',msg:`Data found after PNG IEND chunk — ${bytes.length-i-8} bytes appended`});
+        risk = 'HIGH';
+        break;
+      }
+    }
+  }
+
+  // Entropy check
+  if(entropy > 7.8) { findings.push({level:'MEDIUM',msg:`Very high entropy (${entropy.toFixed(4)}) suggests possible encrypted hidden payload`}); if(risk==='LOW') risk='MEDIUM'; }
+
+  // LSB analysis (sample first 10000 bytes)
+  const sampleSize = Math.min(bytes.length, 10000);
+  let lsbZeros=0, lsbOnes=0;
+  for(let i=0;i<sampleSize;i++) { if(bytes[i]&1) lsbOnes++; else lsbZeros++; }
+  const lsbRatio = lsbOnes/sampleSize;
+  if(lsbRatio>0.48 && lsbRatio<0.52) { findings.push({level:'MEDIUM',msg:`LSB distribution is suspiciously uniform (${(lsbRatio*100).toFixed(1)}% ones) — possible LSB steganography`}); if(risk==='LOW') risk='MEDIUM'; }
+
+  // File size check
+  if(file.size > 5*1024*1024 && sig.ext==='jpg') { findings.push({level:'LOW',msg:'Large JPEG file — could contain embedded data'}); }
+
+  if(!findings.length) findings.push({level:'NONE',msg:'No obvious steganographic indicators detected'});
+
+  let html = `<div class="panel"><div class="panel-header"><div class="panel-title"><span class="icon">🖼️</span> Steganography Analysis — ${file.name}</div></div><div class="panel-body">
+  <div style="margin-bottom:16px"><span class="tag ${risk==='HIGH'?'tag-red':risk==='MEDIUM'?'tag-orange':'tag-green'}">Risk: ${risk}</span></div>
+  <table class="data-table">
+    <tr><th>Level</th><th>Finding</th></tr>
+    ${findings.map(f=>`<tr><td><span class="tag ${f.level==='HIGH'?'tag-red':f.level==='MEDIUM'?'tag-orange':f.level==='LOW'?'tag-yellow':'tag-green'}">${f.level}</span></td><td class="val">${f.msg}</td></tr>`).join('')}
+  </table>
+  <div class="result-box" style="margin-top:12px">
+<strong>LSB Ratio:</strong> ${(lsbRatio*100).toFixed(2)}% ones (expected ~50% for natural images)
+<strong>Entropy:</strong> ${entropy.toFixed(4)} / 8.0
+<strong>File Type:</strong> ${sig.name}
+<strong>File Size:</strong> ${formatBytes(file.size)}
+</div>
+  </div></div>`;
+
+  document.getElementById('stego-output').innerHTML = html;
+  APP.timeline.push({time:nowISO(),event:`Stego analysis: "${file.name}" → Risk: ${risk}`,tool:'Stego Detector'});
+  toast(`Stego analysis complete — Risk: ${risk}`);
+}
+
+// ==== CASE INFORMATION ====
+function renderCaseInfo(el) {
+  const c = APP.caseInfo;
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📁</span> Case Information</div></div>
+    <div class="panel-body">
+      <div class="coc-header"><h3>Case Setup</h3><p>Define case parameters for your forensic investigation report</p></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Case Number</label><input type="text" id="ci-num" value="${c.caseNumber||''}" placeholder="e.g. DF-2026-0042"></div>
+        <div class="form-group"><label class="form-label">Case Title</label><input type="text" id="ci-title" value="${c.title||''}" placeholder="e.g. Corporate Data Theft Investigation"></div>
+        <div class="form-group"><label class="form-label">Lead Examiner</label><input type="text" id="ci-examiner" value="${c.examiner||''}" placeholder="Full name and credentials"></div>
+        <div class="form-group"><label class="form-label">Organization</label><input type="text" id="ci-org" value="${c.organization||''}" placeholder="e.g. Digital Forensics Unit"></div>
+        <div class="form-group"><label class="form-label">Date Opened</label><input type="date" id="ci-date" value="${c.date||new Date().toISOString().split('T')[0]}"></div>
+        <div class="form-group"><label class="form-label">Status</label><select id="ci-status"><option ${c.status==='Open'?'selected':''}>Open</option><option ${c.status==='In Progress'?'selected':''}>In Progress</option><option ${c.status==='Under Review'?'selected':''}>Under Review</option><option ${c.status==='Closed'?'selected':''}>Closed</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Case Description</label><textarea id="ci-desc" rows="4" placeholder="Brief description of the case and objectives...">${c.description||''}</textarea></div>
+      <div class="form-group"><label class="form-label">Legal Authority / Warrant Reference</label><input type="text" id="ci-legal" value="${c.legal||''}" placeholder="e.g. Warrant #W-2026-1234"></div>
+      <button class="btn btn-primary" onclick="saveCaseInfo()">💾 Save Case Information</button>
+    </div>
+  </div>`;
+}
+
+function saveCaseInfo() {
+  APP.caseInfo = {
+    caseNumber: document.getElementById('ci-num').value,
+    title: document.getElementById('ci-title').value,
+    examiner: document.getElementById('ci-examiner').value,
+    organization: document.getElementById('ci-org').value,
+    date: document.getElementById('ci-date').value,
+    status: document.getElementById('ci-status').value,
+    description: document.getElementById('ci-desc').value,
+    legal: document.getElementById('ci-legal').value,
+  };
+  APP.timeline.push({time:nowISO(),event:'Case information updated',tool:'Case Info'});
+  toast('Case information saved');
+  renderSidebar();
+}
+
+// ==== CHAIN OF CUSTODY ====
+function renderChainCustody(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🔗</span> Chain of Custody Log</div></div>
+    <div class="panel-body">
+      <div class="coc-header"><h3>ACPO Compliant Chain of Custody</h3><p>Every transfer, access, and action on evidence must be recorded</p></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Evidence Item ID</label><input type="text" id="coc-id" placeholder="e.g. EV-001"></div>
+        <div class="form-group"><label class="form-label">Date & Time</label><input type="datetime-local" id="coc-dt" value="${new Date().toISOString().slice(0,16)}"></div>
+        <div class="form-group"><label class="form-label">Action Performed</label><select id="coc-action"><option>Received</option><option>Acquired Image</option><option>Transferred</option><option>Analyzed</option><option>Stored</option><option>Returned</option><option>Sealed</option><option>Unsealed</option><option>Copied</option><option>Verified Hash</option></select></div>
+        <div class="form-group"><label class="form-label">Handled By</label><input type="text" id="coc-by" value="${APP.caseInfo.examiner||''}" placeholder="Name & role"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Location</label><input type="text" id="coc-loc" placeholder="e.g. Forensic Lab Room 4B"></div>
+      <div class="form-group"><label class="form-label">Notes / Observations</label><textarea id="coc-notes" placeholder="Detailed notes about the action performed..."></textarea></div>
+      <button class="btn btn-primary" onclick="addCoCEntry()">➕ Add Entry</button>
+    </div>
+  </div>
+  ${APP.cocEntries.length ? `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📜</span> Chain of Custody Entries (${APP.cocEntries.length})</div></div>
+    <div class="panel-body">
+      <table class="data-table">
+        <tr><th>#</th><th>Evidence</th><th>Date/Time</th><th>Action</th><th>Handler</th><th>Location</th><th>Notes</th></tr>
+        ${APP.cocEntries.map((e,i)=>`<tr>
+          <td>${i+1}</td>
+          <td class="val">${e.id}</td>
+          <td class="val">${e.datetime}</td>
+          <td><span class="tag tag-blue">${e.action}</span></td>
+          <td>${e.handler}</td>
+          <td>${e.location}</td>
+          <td style="font-size:.78rem;max-width:200px">${e.notes}</td>
+        </tr>`).join('')}
+      </table>
+    </div>
+  </div>` : ''}`;
+}
+
+function addCoCEntry() {
+  const entry = {
+    id: document.getElementById('coc-id').value || 'N/A',
+    datetime: document.getElementById('coc-dt').value,
+    action: document.getElementById('coc-action').value,
+    handler: document.getElementById('coc-by').value,
+    location: document.getElementById('coc-loc').value,
+    notes: document.getElementById('coc-notes').value,
+  };
+  APP.cocEntries.push(entry);
+  APP.timeline.push({time:nowISO(),event:`CoC entry: ${entry.action} — ${entry.id}`,tool:'Chain of Custody'});
+  toast('Chain of Custody entry added');
+  renderMain();
+}
+
+// ==== EVIDENCE LOG ====
+function renderEvidenceLog(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🗄️</span> Evidence Log</div></div>
+    <div class="panel-body">
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Evidence ID</label><input type="text" id="ev-id" placeholder="e.g. EV-001"></div>
+        <div class="form-group"><label class="form-label">Description</label><input type="text" id="ev-desc" placeholder="e.g. Suspect's laptop hard drive"></div>
+        <div class="form-group"><label class="form-label">Type</label><select id="ev-type"><option>Hard Drive</option><option>USB Drive</option><option>SD Card</option><option>Mobile Device</option><option>Optical Media</option><option>Network Capture</option><option>Memory Dump</option><option>Disk Image</option><option>File</option><option>Email</option><option>Cloud Data</option><option>Other</option></select></div>
+        <div class="form-group"><label class="form-label">Source / Owner</label><input type="text" id="ev-source" placeholder="Where was this obtained?"></div>
+      </div>
+      <div class="form-group"><label class="form-label">SHA-256 Hash</label><input type="text" id="ev-hash" placeholder="Paste hash for integrity verification"></div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea id="ev-notes" placeholder="Additional details, condition, serial numbers..."></textarea></div>
+      <button class="btn btn-primary" onclick="addEvidenceEntry()">➕ Add Evidence</button>
+    </div>
+  </div>
+  ${APP.evidence.length ? `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">🗄️</span> Registered Evidence (${APP.evidence.length})</div></div>
+    <div class="panel-body">
+      ${APP.evidence.map((e,i)=>`
+        <div class="evidence-entry">
+          <div class="num">${i+1}</div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <strong>${e.id} — ${e.description}</strong>
+              <span class="tag tag-purple">${e.type}</span>
+            </div>
+            <div style="font-size:.78rem;color:var(--fg2)">Source: ${e.source} | Added: ${e.time}</div>
+            ${e.hash?`<div style="font-family:var(--font-mono);font-size:.72rem;color:var(--cyan);margin-top:4px;word-break:break-all">SHA-256: ${e.hash}</div>`:''}
+            ${e.notes?`<div style="font-size:.78rem;color:var(--fg3);margin-top:4px">${e.notes}</div>`:''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>` : ''}`;
+}
+
+function addEvidenceEntry() {
+  const entry = {
+    id: document.getElementById('ev-id').value || `EV-${String(APP.evidence.length+1).padStart(3,'0')}`,
+    description: document.getElementById('ev-desc').value,
+    type: document.getElementById('ev-type').value,
+    source: document.getElementById('ev-source').value,
+    hash: document.getElementById('ev-hash').value,
+    notes: document.getElementById('ev-notes').value,
+    time: formatDate(new Date()),
+  };
+  APP.evidence.push(entry);
+  APP.timeline.push({time:nowISO(),event:`Evidence registered: ${entry.id} — ${entry.description}`,tool:'Evidence Log'});
+  toast(`Evidence ${entry.id} registered`);
+  renderSidebar();
+  renderMain();
+}
+
+function addToEvidence(name, hash, size, type) {
+  const id = `EV-${String(APP.evidence.length+1).padStart(3,'0')}`;
+  APP.evidence.push({id, description:name, type:'File', source:'Hash Calculator', hash, notes:`Size: ${size}, Type: ${type}`, time:formatDate(new Date())});
+  APP.timeline.push({time:nowISO(),event:`Evidence auto-registered: ${id} — ${name}`,tool:'Evidence Log'});
+  toast(`${name} added as ${id}`);
+  renderSidebar();
+}
+
+// ==== TIMELINE ====
+function renderTimeline(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">⏱️</span> Investigation Timeline / Audit Trail</div><div><button class="btn btn-danger btn-sm" onclick="APP.timeline=[];renderMain()">Clear</button></div></div>
+    <div class="panel-body">
+      ${APP.timeline.length ? APP.timeline.slice().reverse().map(t=>`
+        <div class="timeline-item">
+          <div class="time">${formatDate(t.time)}</div>
+          <div class="event"><span class="tag tag-blue" style="margin-right:8px">${t.tool}</span>${t.event}</div>
+        </div>
+      `).join('') : '<p style="text-align:center;color:var(--fg3);padding:40px">No activity yet. Use the tools to begin your investigation.</p>'}
+    </div>
+  </div>`;
+}
+
+// ==== REPORT GENERATOR ====
+function renderReportGen(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📄</span> Forensic Report Generator</div></div>
+    <div class="panel-body">
+      <div class="coc-header"><h3>Court-Admissible Report</h3><p>Generate a comprehensive forensic investigation report following ACPO guidelines</p></div>
+      <div class="grid-3" style="margin-bottom:16px">
+        <div class="stat-card"><div class="value">${APP.evidence.length}</div><div class="label">Evidence Items</div></div>
+        <div class="stat-card"><div class="value">${APP.cocEntries.length}</div><div class="label">CoC Entries</div></div>
+        <div class="stat-card"><div class="value">${APP.timeline.length}</div><div class="label">Activities</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Report Format</label>
+        <select id="rpt-format"><option value="html">HTML (Printable)</option><option value="text">Plain Text</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Additional Findings / Conclusions</label>
+        <textarea id="rpt-findings" rows="4" placeholder="Summarize your key findings and conclusions..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="generateReport()">📄 Generate Report</button>
+    </div>
+  </div>
+  <div id="report-output"></div>`;
+}
+
+function generateReport() {
+  const format = document.getElementById('rpt-format').value;
+  const findings = document.getElementById('rpt-findings').value;
+  const c = APP.caseInfo;
+
+  if(format==='html') {
+    const report = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Forensic Report — ${c.caseNumber||'N/A'}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto}
+h1{font-size:20px;border-bottom:3px solid #000;padding-bottom:8px;margin-bottom:16px}h2{font-size:14px;background:#f0f0f0;padding:8px 12px;margin:20px 0 12px;border-left:4px solid #333}
+table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:11px}th{background:#f5f5f5;font-weight:bold}
+.header{text-align:center;margin-bottom:30px}.header h1{border:none;font-size:22px}.mono{font-family:'Courier New',monospace;font-size:10px;word-break:break-all}
+.footer{margin-top:40px;border-top:2px solid #000;padding-top:12px;font-size:10px;color:#666}
+.stamp{border:2px solid #c00;color:#c00;padding:8px 16px;display:inline-block;font-weight:bold;font-size:14px;transform:rotate(-5deg);margin:20px 0}
+@media print{body{padding:20px}}</style></head><body>
+<div class="header">
+<div class="stamp">CONFIDENTIAL — FORENSIC REPORT</div>
+<h1>DIGITAL FORENSIC INVESTIGATION REPORT</h1>
+<p>Generated by ForensX Lab — ${new Date().toLocaleDateString('en-GB')}</p>
+<p>Website: aswinmathew.xyz</p>
+</div>
+<h2>1. Case Information</h2>
+<table><tr><th>Case Number</th><td>${c.caseNumber||'Not specified'}</td><th>Status</th><td>${c.status||'Open'}</td></tr>
+<tr><th>Case Title</th><td colspan="3">${c.title||'Not specified'}</td></tr>
+<tr><th>Lead Examiner</th><td>${c.examiner||'Not specified'}</td><th>Organization</th><td>${c.organization||'Not specified'}</td></tr>
+<tr><th>Date Opened</th><td>${c.date||'Not specified'}</td><th>Legal Authority</th><td>${c.legal||'Not specified'}</td></tr>
+<tr><th>Description</th><td colspan="3">${c.description||'Not specified'}</td></tr></table>
+
+<h2>2. ACPO Compliance Statement</h2>
+<p>This investigation was conducted in accordance with the Association of Chief Police Officers (ACPO) Good Practice Guide for Digital Evidence. The four principles have been observed throughout:</p>
+<table><tr><th>Principle</th><th>Description</th><th>Status</th></tr>
+<tr><td>1</td><td>No action taken should change data which may subsequently be relied upon in court</td><td>✓ Compliant</td></tr>
+<tr><td>2</td><td>Where access to original data is necessary, the person must be competent to do so</td><td>✓ Compliant</td></tr>
+<tr><td>3</td><td>An audit trail of all processes should be created and preserved</td><td>✓ ${APP.timeline.length} activities logged</td></tr>
+<tr><td>4</td><td>The person in charge has overall responsibility for adherence to law and principles</td><td>✓ Compliant</td></tr></table>
+
+<h2>3. Evidence Register (${APP.evidence.length} items)</h2>
+${APP.evidence.length?`<table><tr><th>ID</th><th>Description</th><th>Type</th><th>Source</th><th>SHA-256</th><th>Notes</th></tr>
+${APP.evidence.map(e=>`<tr><td>${e.id}</td><td>${e.description}</td><td>${e.type}</td><td>${e.source}</td><td class="mono">${e.hash||'—'}</td><td>${e.notes||'—'}</td></tr>`).join('')}</table>`:'<p>No evidence items registered.</p>'}
+
+<h2>4. Chain of Custody (${APP.cocEntries.length} entries)</h2>
+${APP.cocEntries.length?`<table><tr><th>#</th><th>Evidence</th><th>Date/Time</th><th>Action</th><th>Handler</th><th>Location</th><th>Notes</th></tr>
+${APP.cocEntries.map((e,i)=>`<tr><td>${i+1}</td><td>${e.id}</td><td>${e.datetime}</td><td>${e.action}</td><td>${e.handler}</td><td>${e.location}</td><td>${e.notes}</td></tr>`).join('')}</table>`:'<p>No chain of custody entries.</p>'}
+
+<h2>5. Hash Verification Log (${APP.hashResults.length} items)</h2>
+${APP.hashResults.length?`<table><tr><th>File</th><th>Size</th><th>MD5</th><th>SHA-256</th><th>Time</th></tr>
+${APP.hashResults.map(h=>`<tr><td>${h.name}</td><td>${h.size}</td><td class="mono">${h.md5}</td><td class="mono">${h.sha256}</td><td>${h.time}</td></tr>`).join('')}</table>`:'<p>No hashes computed.</p>'}
+
+<h2>6. Investigation Timeline (${APP.timeline.length} activities)</h2>
+${APP.timeline.length?`<table><tr><th>Time</th><th>Tool</th><th>Activity</th></tr>
+${APP.timeline.map(t=>`<tr><td>${formatDate(t.time)}</td><td>${t.tool}</td><td>${t.event}</td></tr>`).join('')}</table>`:'<p>No activities recorded.</p>'}
+
+<h2>7. Findings & Conclusions</h2>
+<p>${findings || 'No findings documented.'}</p>
+
+<div class="footer">
+<p><strong>Report generated:</strong> ${new Date().toLocaleString('en-GB')} UTC</p>
+<p><strong>Tool:</strong> ForensX Lab — Digital Forensics & Evidence Preservation Platform</p>
+<p><strong>Author:</strong> ${c.examiner||'Not specified'} | ${c.organization||'Not specified'}</p>
+<p><strong>Website:</strong> aswinmathew.xyz</p>
+<p><strong>License:</strong> MIT License — Copyright (c) 2026 Aswin Mathew</p>
+<br><br>
+<table><tr><td style="width:50%"><strong>Examiner Signature:</strong><br><br><br>_________________________<br>${c.examiner||''}<br>Date: _______________</td>
+<td><strong>Reviewer Signature:</strong><br><br><br>_________________________<br><br>Date: _______________</td></tr></table>
+</div></body></html>`;
+
+    const blob = new Blob([report], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ForensX_Report_${c.caseNumber||'case'}_${new Date().toISOString().split('T')[0]}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    document.getElementById('report-output').innerHTML = `<div class="result-box success" style="margin-top:16px">✅ Report generated and downloaded successfully.
+File: ${a.download}
+Format: HTML (Print-ready, court-admissible format)
+Evidence Items: ${APP.evidence.length}
+CoC Entries: ${APP.cocEntries.length}
+Timeline Events: ${APP.timeline.length}
+
+Open the file in any browser and use Ctrl+P to print or save as PDF.</div>`;
+  } else {
+    // Plain text
+    let text = `DIGITAL FORENSIC INVESTIGATION REPORT\n${'='.repeat(50)}\nGenerated: ${new Date().toLocaleString()}\nTool: ForensX Lab | aswinmathew.xyz\n\n`;
+    text += `CASE INFORMATION\n${'-'.repeat(30)}\nCase #: ${c.caseNumber||'N/A'}\nTitle: ${c.title||'N/A'}\nExaminer: ${c.examiner||'N/A'}\nOrg: ${c.organization||'N/A'}\nDate: ${c.date||'N/A'}\nStatus: ${c.status||'Open'}\nLegal: ${c.legal||'N/A'}\nDescription: ${c.description||'N/A'}\n\n`;
+    text += `EVIDENCE LOG (${APP.evidence.length} items)\n${'-'.repeat(30)}\n`;
+    APP.evidence.forEach((e,i)=>text+=`${i+1}. [${e.id}] ${e.description} (${e.type}) — SHA-256: ${e.hash||'N/A'}\n`);
+    text += `\nCHAIN OF CUSTODY (${APP.cocEntries.length} entries)\n${'-'.repeat(30)}\n`;
+    APP.cocEntries.forEach((e,i)=>text+=`${i+1}. ${e.datetime} | ${e.action} | ${e.id} | By: ${e.handler} | ${e.location}\n`);
+    text += `\nTIMELINE (${APP.timeline.length} events)\n${'-'.repeat(30)}\n`;
+    APP.timeline.forEach(t=>text+=`${formatDate(t.time)} [${t.tool}] ${t.event}\n`);
+    text += `\nFINDINGS\n${'-'.repeat(30)}\n${findings||'None documented.'}\n`;
+
+    const blob = new Blob([text], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ForensX_Report_${c.caseNumber||'case'}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    document.getElementById('report-output').innerHTML = `<div class="result-box success" style="margin-top:16px">✅ Plain text report downloaded: ${a.download}</div>`;
+  }
+
+  APP.timeline.push({time:nowISO(),event:'Forensic report generated',tool:'Report Generator'});
+  toast('Report generated and downloaded');
+}
+
+// ==== ACPO GUIDELINES ====
+function renderACPO(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">📖</span> ACPO Good Practice Guide — Digital Evidence</div></div>
+    <div class="panel-body" style="line-height:1.9;font-size:.88rem">
+      <div class="coc-header"><h3>Association of Chief Police Officers (ACPO)</h3><p>Good Practice Guide for Digital Evidence — Core Principles</p></div>
+
+      <h3 style="color:var(--accent);margin:20px 0 8px;font-size:1rem">Principle 1 — Data Preservation</h3>
+      <p style="color:var(--fg2);margin-bottom:16px">No action taken by law enforcement agencies, persons employed within those agencies, or their agents should change data which may subsequently be relied upon in court.</p>
+      <div class="result-box" style="margin-bottom:16px"><strong>Implementation:</strong> Always work on forensic copies. Use write-blockers. Verify integrity with cryptographic hashes before and after analysis.</div>
+
+      <h3 style="color:var(--accent);margin:20px 0 8px;font-size:1rem">Principle 2 — Competency</h3>
+      <p style="color:var(--fg2);margin-bottom:16px">In circumstances where a person finds it necessary to access original data, that person must be competent to do so and be able to give evidence explaining the relevance and implications of their actions.</p>
+      <div class="result-box" style="margin-bottom:16px"><strong>Implementation:</strong> Only qualified examiners should access original evidence. Document all qualifications and certifications. Maintain training records.</div>
+
+      <h3 style="color:var(--accent);margin:20px 0 8px;font-size:1rem">Principle 3 — Audit Trail</h3>
+      <p style="color:var(--fg2);margin-bottom:16px">An audit trail or other record of all processes applied to digital evidence should be created and preserved. An independent third party should be able to reproduce those processes and achieve the same result.</p>
+      <div class="result-box" style="margin-bottom:16px"><strong>Implementation:</strong> Use ForensX Lab's Timeline feature to automatically log all activities. Document every tool used, setting applied, and result obtained.</div>
+
+      <h3 style="color:var(--accent);margin:20px 0 8px;font-size:1rem">Principle 4 — Responsibility</h3>
+      <p style="color:var(--fg2);margin-bottom:16px">The person in charge of the investigation has overall responsibility for ensuring that the law and these principles are adhered to.</p>
+      <div class="result-box"><strong>Implementation:</strong> The lead examiner must review all procedures, sign off on reports, and ensure compliance throughout the investigation lifecycle.</div>
+
+      <h3 style="color:var(--accent);margin:24px 0 8px;font-size:1rem">Best Practices Checklist</h3>
+      <table class="data-table">
+        <tr><th>Step</th><th>Action</th><th>Tool</th></tr>
+        <tr><td>1</td><td>Document the scene and initial state of evidence</td><td>Case Info, Evidence Log</td></tr>
+        <tr><td>2</td><td>Create forensic images using write-blockers</td><td>External imaging tool</td></tr>
+        <tr><td>3</td><td>Compute and verify hash values of original and copy</td><td>Hash Calculator</td></tr>
+        <tr><td>4</td><td>Maintain chain of custody for all evidence</td><td>Chain of Custody</td></tr>
+        <tr><td>5</td><td>Analyze evidence on forensic copies only</td><td>Hex Viewer, Metadata, Strings</td></tr>
+        <tr><td>6</td><td>Document all findings with timestamps</td><td>Timeline, Evidence Log</td></tr>
+        <tr><td>7</td><td>Verify hash integrity post-analysis</td><td>Hash Comparator</td></tr>
+        <tr><td>8</td><td>Generate comprehensive report</td><td>Report Generator</td></tr>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ==== ABOUT ====
+function renderAbout(el) {
+  el.innerHTML = `
+  <div class="panel">
+    <div class="panel-header"><div class="panel-title"><span class="icon">ℹ️</span> About ForensX Lab</div></div>
+    <div class="panel-body" style="line-height:1.9">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:3rem;margin-bottom:8px">🔬</div>
+        <h2 style="font-size:1.4rem">ForensX Lab <span style="color:var(--accent)">v1.0</span></h2>
+        <p style="color:var(--fg2)">Digital Forensics & Evidence Preservation Platform</p>
+        <p style="margin-top:8px"><a href="https://aswinmathew.xyz" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600">aswinmathew.xyz</a></p>
+      </div>
+      <h3 style="color:var(--accent);margin-bottom:12px;font-size:.9rem">Features</h3>
+      <table class="data-table">
+        <tr><td class="key">🔐 Hash Calculator</td><td>MD5, SHA-1, SHA-256, SHA-512 computation for files and text</td></tr>
+        <tr><td class="key">🔍 Hex Viewer</td><td>Binary content inspection with hex dump and ASCII view</td></tr>
+        <tr><td class="key">📋 Metadata Extractor</td><td>File properties, EXIF data, and embedded metadata extraction</td></tr>
+        <tr><td class="key">🧬 File Signatures</td><td>Magic bytes analysis for true file type detection</td></tr>
+        <tr><td class="key">📝 String Extractor</td><td>ASCII string extraction with URL, email, and path detection</td></tr>
+        <tr><td class="key">⚖️ Hash Comparator</td><td>Evidence integrity verification through hash comparison</td></tr>
+        <tr><td class="key">🔄 Base64 Codec</td><td>Encode/decode Base64 data for analysis</td></tr>
+        <tr><td class="key">📈 Entropy Analysis</td><td>Shannon entropy calculation for encryption detection</td></tr>
+        <tr><td class="key">🖼️ Stego Detector</td><td>Basic steganography detection in images</td></tr>
+        <tr><td class="key">📁 Case Management</td><td>Full case information and configuration</td></tr>
+        <tr><td class="key">🔗 Chain of Custody</td><td>ACPO-compliant evidence handling log</td></tr>
+        <tr><td class="key">🗄️ Evidence Log</td><td>Central evidence registry with hash tracking</td></tr>
+        <tr><td class="key">⏱️ Timeline</td><td>Automatic audit trail of all investigation activities</td></tr>
+        <tr><td class="key">📄 Report Generator</td><td>Court-admissible forensic investigation reports</td></tr>
+      </table>
+      <div class="result-box" style="margin-top:16px">
+<strong>Privacy Notice:</strong> All processing is done entirely in your browser.
+No data is sent to any server. No files leave your device.
+This tool is 100% client-side — ideal for sensitive investigations.
+
+<strong>Deployment:</strong> Single HTML file — host on GitHub Pages for free.
+No dependencies. No build step. No server required.
+
+<strong>Compatibility:</strong> Chrome, Firefox, Edge, Safari (modern versions).
+
+<strong>License:</strong> MIT License — Copyright (c) 2026 Aswin Mathew
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software to deal in the Software without restriction,
+including the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies. See LICENSE file for full terms.
+
+<strong>Author:</strong> Aswin Mathew — aswinmathew.xyz
+</div>
+    </div>
+  </div>`;
+}
+
+// ==== HELPER FUNCTIONS ====
+function setupDropzone(dropId, fileId) {
+  const drop = document.getElementById(dropId);
+  if(!drop) return;
+  ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('dragover')}));
+  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('dragover')}));
+  drop.addEventListener('drop',ev=>{
+    const file = ev.dataTransfer.files[0];
+    if(file) {
+      const input = document.getElementById(fileId);
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+}
+
+function copyToClip(text) {
+  navigator.clipboard.writeText(text).then(()=>toast('Copied to clipboard')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Copied');
+  });
+}
+
+// ==== INIT ====
+renderSidebar();
+renderMain();
+</script>
+</body>
+</html>
