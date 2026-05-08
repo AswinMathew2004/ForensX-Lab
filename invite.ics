@@ -1,0 +1,35 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:CANCEL
+BEGIN:VEVENT
+DTSTART:20260507T143000Z
+DTEND:20260507T153000Z
+DTSTAMP:20260507T145536Z
+ORGANIZER;CN=gowri lakshmi hot chips:mailto:gowrilakshmihotchips@gmail.com
+UID:6op62d9h69i38b9l6cs64b9k60oj6bb26di30bb26gq3gpj16kpjaphjcc@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=gowri 
+ lakshmi hot chips;X-NUM-GUESTS=0:mailto:gowrilakshmihotchips@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=DELETED;CN=vipinab
+ botthc@gmail.com;X-NUM-GUESTS=0:mailto:vipinabbotthc@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=sanusi
+ biee51@gmail.com;X-NUM-GUESTS=0:mailto:sanusibiee51@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=signat
+ urecreation2025@gmail.com;X-NUM-GUESTS=0:mailto:signaturecreation2025@gmail
+ .com
+X-GOOGLE-CONFERENCE:https://meet.google.com/fgd-rdpw-hma
+CREATED:20260507T073503Z
+DESCRIPTION:-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~::~:~::-\nJoin with Google Meet: https://meet.google.com/fg
+ d-rdpw-hma\n\nLearn more about Meet at: https://support.google.com/a/users/
+ answer/9282720\n\nPlease do not edit this section.\n-::~:~::~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+LAST-MODIFIED:20260507T145535Z
+LOCATION:
+SEQUENCE:1
+STATUS:CANCELLED
+SUMMARY:Cinematographers meet
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
